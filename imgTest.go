@@ -47,14 +47,17 @@ func changeImage(img image.Image) image.Image {
 
 	sort.Ints(arr)
 
-	avg := uint8(arr[int(len(arr)/2)])
+	avg1 := uint8(arr[int(len(arr)/3)])
+	avg2 := uint8(arr[int(len(arr)/3)*2])
 
 	for y := 0; y < rect.Size().Y; y++ {
 		for x := 0; x < rect.Size().X; x++ {
 			r0, g0, b0, _ := img.At(x, y).RGBA()
 			r, g, b := uint8(r0), uint8(g0), uint8(b0)
-			if (r+g+b)/3 > avg {
+			if (r+g+b)/3 > avg2 {
 				r, g, b = 255, 255, 255
+			} else if (r+g+b)/3 > avg1 {
+				r, g, b = 128, 128, 128
 			} else {
 				r, g, b = 0, 0, 0
 			}
