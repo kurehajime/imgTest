@@ -11,7 +11,6 @@ import (
 	"os"
 	"sort"
 	"strconv"
-	"sync"
 	"time"
 )
 
@@ -42,7 +41,7 @@ func main() {
 
 	saveImage(newImg)
 	end := time.Now()
-	fmt.Printf("%fs\n", (end.Sub(start)).Seconds())
+	fmt.Printf("complete! (%fs)\n", (end.Sub(start)).Seconds())
 
 }
 func convertMono(img image.Image) image.Image {
@@ -86,8 +85,6 @@ func convertMono(img image.Image) image.Image {
 func convertMSPaint(img image.Image) image.Image {
 	rect := img.Bounds()
 	rgba := image.NewRGBA(rect)
-	var waitGroup sync.WaitGroup
-
 	colorSet := [...]string{
 		"000000", "FFFFFF", "808080", "c0c0c0",
 		"800000", "FF0000", "808000", "FFFF00",
@@ -96,19 +93,14 @@ func convertMSPaint(img image.Image) image.Image {
 	}
 	for y := 0; y < rect.Size().Y; y++ {
 		for x := 0; x < rect.Size().X; x++ {
-			waitGroup.Add(1)
-			go func(x, y int, img image.Image) {
-				defer waitGroup.Done()
-				r0, g0, b0, _ := img.At(x, y).RGBA()
-				r, g, b := uint8(r0), uint8(g0), uint8(b0)
+			r0, g0, b0, _ := img.At(x, y).RGBA()
+			r, g, b := uint8(r0), uint8(g0), uint8(b0)
 
-				r, g, b = nearColor(r, g, b, colorSet[:])
-				rgba.Set(x, y, color.RGBA{r, g, b, 255})
-				return
-			}(x, y, img)
+			r, g, b = nearColor(r, g, b, colorSet[:])
+			rgba.Set(x, y, color.RGBA{r, g, b, 255})
+
 		}
 	}
-	waitGroup.Wait()
 	return rgba
 
 }
