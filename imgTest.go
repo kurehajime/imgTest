@@ -7,8 +7,10 @@ import (
 	"image/color"
 	_ "image/jpeg"
 	"image/png"
+	"math"
 	"os"
 	"sort"
+	"strconv"
 )
 
 func main() {
@@ -25,12 +27,12 @@ func main() {
 		return
 	}
 
-	newImg := changeImage(img)
+	newImg := convertMSPaint(img)
 
 	saveImage(newImg)
 
 }
-func changeImage(img image.Image) image.Image {
+func convertMono(img image.Image) image.Image {
 
 	rect := img.Bounds()
 	rgba := image.NewRGBA(rect)
@@ -67,6 +69,53 @@ func changeImage(img image.Image) image.Image {
 		}
 	}
 	return rgba
+}
+func convertMSPaint(img image.Image) image.Image {
+	rect := img.Bounds()
+	rgba := image.NewRGBA(rect)
+	colorSet := [...]string{
+		"000000", "FFFFFF", "808080", "c0c0c0",
+		"800000", "FF0000", "808000", "FFFF00",
+		"008000", "00FF00", "008080", "00FFFF",
+		"000080", "0000FF", "800080", "FF00FF",
+	}
+	for y := 0; y < rect.Size().Y; y++ {
+		for x := 0; x < rect.Size().X; x++ {
+			r0, g0, b0, _ := img.At(x, y).RGBA()
+			r, g, b := uint8(r0), uint8(g0), uint8(b0)
+
+			r, g, b = nearColor(r, g, b, colorSet[:])
+			rgba.Set(x, y, color.RGBA{r, g, b, 255})
+
+		}
+	}
+	return rgba
+
+}
+
+func nearColor(r0, g0, b0 uint8, conv_colors []string) (uint8, uint8, uint8) {
+
+	sel_r, sel_g, sel_b := uint8(0), uint8(0), uint8(9)
+	sel_d := 999999.0
+
+	for i := 0; i < len(conv_colors); i++ {
+		rx, _ := (strconv.ParseUint(conv_colors[i][0:2], 16, 0))
+		gx, _ := (strconv.ParseUint(conv_colors[i][2:4], 16, 0))
+		bx, _ := (strconv.ParseUint(conv_colors[i][4:6], 16, 0))
+		r, g, b := int(rx), int(gx), int(bx)
+		rd := math.Pow(float64(int(r0)-r), 2)
+		gd := math.Pow(float64(int(g0)-g), 2)
+		bd := math.Pow(float64(int(b0)-b), 2)
+
+		d := math.Sqrt(rd + gd + bd)
+
+		if d <= sel_d {
+			sel_r, sel_g, sel_b = uint8(r), uint8(g), uint8(b)
+			sel_d = d
+		}
+	}
+	return sel_r, sel_g, sel_b
+
 }
 
 func saveImage(img image.Image) {
