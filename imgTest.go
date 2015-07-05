@@ -14,7 +14,16 @@ import (
 )
 
 func main() {
-	file, err := os.Open("image.png")
+	path := ""
+
+	if len(os.Args) <= 2 {
+		path = os.Args[1]
+	} else {
+		fmt.Println("Please specify the path to image file.")
+		return
+	}
+
+	file, err := os.Open(path)
 	defer file.Close()
 
 	if err != nil {
