@@ -24,26 +24,32 @@ func main() {
 		return
 	}
 
-	file, err := os.Open(path)
-	defer file.Close()
-
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	img, _, err := image.Decode(file)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	img := getIMG(path)
 
 	newImg := convertMSPaint(img)
+	newImg = replaceTexture(newImg, getIMG("FF0000.png"), "FF0000")
 
 	saveImage(newImg)
 	end := time.Now()
 	fmt.Printf("complete! (%fs)\n", (end.Sub(start)).Seconds())
 
 }
+func getIMG(path string) image.Image {
+	file, err := os.Open(path)
+	defer file.Close()
+
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	img, _, err := image.Decode(file)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	return img
+}
+
 func convertMono(img image.Image) image.Image {
 
 	rect := img.Bounds()
@@ -99,6 +105,30 @@ func convertMSPaint(img image.Image) image.Image {
 			r, g, b = nearColor(r, g, b, colorSet[:])
 			rgba.Set(x, y, color.RGBA{r, g, b, 255})
 
+		}
+	}
+	return rgba
+
+}
+func replaceTexture(img, bg image.Image, colorCode string) image.Image {
+	rect := img.Bounds()
+	rect2 := bg.Bounds()
+	r, _ := (strconv.ParseUint(colorCode[0:2], 16, 0))
+	g, _ := (strconv.ParseUint(colorCode[2:4], 16, 0))
+	b, _ := (strconv.ParseUint(colorCode[4:6], 16, 0))
+
+	rgba := image.NewRGBA(rect)
+	for y := 0; y < rect.Size().Y; y++ {
+		for x := 0; x < rect.Size().X; x++ {
+			r0, g0, b0, _ := img.At(x, y).RGBA()
+			if uint8(r) == uint8(r0) && uint8(g) == uint8(g0) && uint8(b) == uint8(b0) {
+				x1 := int(math.Mod(float64(x), float64(rect2.Size().X)))
+				y1 := int(math.Mod(float64(y), float64(rect2.Size().Y)))
+				r1, g1, b1, _ := bg.At(x1, y1).RGBA()
+				rgba.Set(x, y, color.RGBA{uint8(r1), uint8(g1), uint8(b1), 255})
+			} else {
+				rgba.Set(x, y, color.RGBA{uint8(r0), uint8(g0), uint8(b0), 255})
+			}
 		}
 	}
 	return rgba
