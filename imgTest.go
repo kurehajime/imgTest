@@ -101,7 +101,6 @@ func convertMSPaint(img image.Image) image.Image {
 		for x := 0; x < rect.Size().X; x++ {
 			r0, g0, b0, _ := img.At(x, y).RGBA()
 			r, g, b := uint8(r0), uint8(g0), uint8(b0)
-
 			r, g, b = nearColor(r, g, b, colorSet[:])
 			rgba.Set(x, y, color.RGBA{r, g, b, 255})
 
@@ -137,26 +136,25 @@ func replaceTexture(img, bg image.Image, colorCode string) image.Image {
 
 func nearColor(r0, g0, b0 uint8, conv_colors []string) (uint8, uint8, uint8) {
 
-	sel_r, sel_g, sel_b := uint8(0), uint8(0), uint8(9)
+	sel_r, sel_g, sel_b := uint64(0), uint64(0), uint64(0)
 	sel_d := 999999.0
 
 	for i := 0; i < len(conv_colors); i++ {
 		rx, _ := (strconv.ParseUint(conv_colors[i][0:2], 16, 0))
 		gx, _ := (strconv.ParseUint(conv_colors[i][2:4], 16, 0))
 		bx, _ := (strconv.ParseUint(conv_colors[i][4:6], 16, 0))
-		r, g, b := int(rx), int(gx), int(bx)
-		rd := math.Pow(float64(int(r0)-r), 2)
-		gd := math.Pow(float64(int(g0)-g), 2)
-		bd := math.Pow(float64(int(b0)-b), 2)
+		rd := math.Pow(float64(r0)-float64(rx), 2)
+		gd := math.Pow(float64(g0)-float64(gx), 2)
+		bd := math.Pow(float64(b0)-float64(bx), 2)
 
 		d := math.Sqrt(rd + gd + bd)
 
 		if d <= sel_d {
-			sel_r, sel_g, sel_b = uint8(r), uint8(g), uint8(b)
+			sel_r, sel_g, sel_b = rx, gx, bx
 			sel_d = d
 		}
 	}
-	return sel_r, sel_g, sel_b
+	return uint8(sel_r), uint8(sel_g), uint8(sel_b)
 
 }
 
