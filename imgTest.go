@@ -151,9 +151,9 @@ func nearColor(r0, g0, b0 uint8, conv_colors [][3]uint8) (uint8, uint8, uint8) {
 		rx := conv_colors[i][0]
 		gx := conv_colors[i][1]
 		bx := conv_colors[i][2]
-		rd := math.Pow(float64(r0)-float64(rx), 2)
-		gd := math.Pow(float64(g0)-float64(gx), 2)
-		bd := math.Pow(float64(b0)-float64(bx), 2)
+		rd := (float64(r0)-float64(rx))*(float64(r0)-float64(rx))
+		gd := (float64(g0)-float64(gx))*(float64(g0)-float64(gx))
+		bd := (float64(b0)-float64(bx))*(float64(b0)-float64(bx))
 
 		d := math.Sqrt(rd + gd + bd)
 
