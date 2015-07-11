@@ -17,7 +17,7 @@ import (
 func main() {
 	path := ""
 	start := time.Now()
-	if len(os.Args) <= 2 {
+	if len(os.Args) >= 2 {
 		path = os.Args[1]
 	} else {
 		fmt.Println("Please specify the path to image file.")
