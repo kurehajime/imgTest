@@ -92,7 +92,7 @@ func convertMSPaint(img image.Image) image.Image {
 	rect := img.Bounds()
 	rgba := image.NewRGBA(rect)
 	colorSet := [...]string{
-		"000000", "FFFFFF", "808080", "c0c0c0",
+		"000000", "FFFFFF", //"808080", "c0c0c0",
 		"800000", "FF0000", "808000", "FFFF00",
 		"008000", "00FF00", "008080", "00FFFF",
 		"000080", "0000FF", "800080", "FF00FF",
